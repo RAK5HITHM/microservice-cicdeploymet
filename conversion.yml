@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: conversion
+ namespace: default
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: conversion
+ template:
+   metadata:
+     labels:
+       app: conversion
+     annotations:
+      kubernetes.io/change-cause: "V1"
+   spec:
+    containers:
+     - name: conversion
+       image: in28min/currency-conversion:0.0.1-RELEASE
+       ports:
+        - containerPort: 8100
+       env:
+        - name: CURRENCY_EXCHANGE_SERVICE_HOST
+          value: http://ce
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: conversion
+spec: 
+ type: LoadBalancer
+ selector:
+  app: conversion
+ ports:
+  - port: 4444
+    targetPort: 8100
