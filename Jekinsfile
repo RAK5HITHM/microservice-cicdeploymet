@@ -1,16 +1,16 @@
 pipeline{
    agent { label 'kali-2' }
-   env {
+   envirnonment {
      secret=credentials('docker')
        }
    stages{
     stage('Clone')
      { 
-       step{ git 'https://github.com/RAK5HITHM/microservice-cicdeploymet.git'}  
+       steps{ git 'https://github.com/RAK5HITHM/microservice-cicdeploymet.git'}  
      }
      stage('Build')
      {
-        step{ 
+        steps{ 
                sh 'cd ./01-currency-exchange-microservice-basic'
                sh 'docker build -t rakshithraka/microservice:exchange .'
                sh 'cd .. && cd ./02-currency-conversion-microservice-basic'
