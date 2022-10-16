@@ -1,21 +1,40 @@
 pipeline{
    agent { label 'kali-2' }
-   envirnonment {
-     secret=credentials('docker')
+   env {
+         DOCKER=credentials('docker')
        }
    stages{
     stage('Clone')
      { 
-       steps{ git 'https://github.com/RAK5HITHM/microservice-cicdeploymet.git'}  
+       steps{ git branch: 'main', url: 'https://github.com/RAK5HITHM/microservice-cicdeploymet.git'}  
      }
-     stage('Build')
+     stage('Build Exchange Microservice')
      {
         steps{ 
-               sh 'cd ./01-currency-exchange-microservice-basic'
-               sh 'docker build -t rakshithraka/microservice:exchange .'
-               sh 'cd .. && cd ./02-currency-conversion-microservice-basic'
-               sh 'docker build -t rakshithraka/microservice:conversion .'
+               sh 'docker build -t rakshithraka/microservice:exchange ./01-currency-exchange-microservice-basic'
             }
      } 
+     stage('Build Conversion Microservice')
+     {
+        steps{ 
+               sh 'docker build -t rakshithraka/microservice:conversion ./02-currency-conversion-microservice-basic'
+            }
+     } 
+     stage('Pushing the containers to DockerHub')
+     {
+        steps{ 
+               sh 'echo $DOCKER_PSW | docker login -u $DOCKER_USR --password-stdin'
+               sh 'docker push rakshithraka/microservice:exchange'
+               sh 'docker push rakshithraka/microservice:conversion' 
+               sh 'docker logout'
+            }
+     } 
+     stage('Deploy')
+     {
+        steps{  
+               sh 'kubectl apply -f exchange.yml'
+               sh 'kubectl apply -f conversion.yml'
+            }
+     }
    }
 }   
